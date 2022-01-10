@@ -5,7 +5,6 @@ import (
 	"assignment-2/models"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,13 +16,11 @@ func CreateOrder(c *gin.Context) {
 		panic(err.Error())
 	}
 	statement := "INSERT INTO orders (customer_name,ordered_at) VALUES ($1, $2) RETURNING order_id"
-	orderTime, err := time.Parse("2019-11-09T21:21:46+00:00", order.OrderedAt)
-	if err != nil {
+	row := db.QueryRow(statement, order.CustomerName, order.OrderedAt)
+	var orderID uint
+	if err := row.Scan(&orderID); err != nil {
 		panic(err.Error())
 	}
-	row := db.QueryRow(statement, order.CustomerName, orderTime)
-	var orderID uint
-	row.Scan(&orderID)
 	statement = "INSERT INTO items (item_code,description,quantity,order_id) VALUES ($1, $2, $3, $4)"
 	for _, item := range order.Items {
 		db.QueryRow(statement, item.ItemCode, item.Description, item.Quantity, orderID)
