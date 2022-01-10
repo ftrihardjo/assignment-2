@@ -17,7 +17,7 @@ func CreateOrder(c *gin.Context) {
 		panic(err.Error())
 	}
 	statement := "INSERT INTO orders (customer_name,ordered_at) VALUES ($1, $2) RETURNING order_id"
-	orderTime, err := time.Parse("2006-01-02T15:04:05-0700", order.OrderedAt)
+	orderTime, err := time.Parse("2019-11-09T21:21:46+00:00", order.OrderedAt)
 	if err != nil {
 		panic(err.Error())
 	}
