@@ -14,4 +14,5 @@ func init() {
 func main() {
 	r := router.StartApp()
 	r.Run(PORT)
+	db.GetDB().Close()
 }

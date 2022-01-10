@@ -5,6 +5,7 @@ import (
 	"assignment-2/models"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,19 +13,15 @@ import (
 func CreateOrder(c *gin.Context) {
 	db := db.GetDB()
 	order := models.Order{}
-	err := c.ShouldBindJSON(&order)
+	if err := c.ShouldBindJSON(&order); err != nil {
+		panic(err.Error())
+	}
+	statement := "INSERT INTO orders (customer_name,ordered_at) VALUES ($1, $2) RETURNING order_id"
+	orderTime, err := time.Parse("2006-01-02T15:04:05-0700", order.OrderedAt)
 	if err != nil {
 		panic(err.Error())
 	}
-	statement := "INSERT INTO orders (customer_name,ordered_at) VALUES ($1, $2)"
-	db.QueryRow(statement, order.CustomerName, order.OrderedAt)
-	statement = "SELECT order_id FROM orders WHERE customer_name=$1 AND ordered_at=$2"
-	row, err := db.Query(statement, order.CustomerName, order.OrderedAt)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer row.Close()
-	row.Next()
+	row := db.QueryRow(statement, order.CustomerName, orderTime)
 	var orderID uint
 	row.Scan(&orderID)
 	statement = "INSERT INTO items (item_code,description,quantity,order_id) VALUES ($1, $2, $3, $4)"
